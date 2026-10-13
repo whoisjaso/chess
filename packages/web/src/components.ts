@@ -17,10 +17,52 @@ const GUEST =
 
 const AVATAR_IDS = new Set(['showman', 'diplomat', 'bookworm', 'professor', 'underdog', 'warlord', 'kiyo', 'lumen', 'karasu', 'tenka', 'flint', 'shuji', 'namenlos']);
 
-/** Bots and coaches have rendered portraits; people get the default pawn avatar. */
-export function avatar(id?: string): string {
-  return id && AVATAR_IDS.has(id) ? `${BASE}img/avatars/${id}.png` : GUEST;
+const CUSTOM_KEY = 'chessbutfree.portraits.v1';
+
+/** Portraits the player uploaded (kept in this browser only). */
+export function customPortraits(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(CUSTOM_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
 }
+
+export function setCustomPortrait(id: string, dataUrl: string | null): void {
+  const all = customPortraits();
+  if (dataUrl) all[id] = dataUrl;
+  else delete all[id];
+  try {
+    localStorage.setItem(CUSTOM_KEY, JSON.stringify(all));
+  } catch {
+    /* storage full */
+  }
+}
+
+/** Resize an uploaded image to a 256px square (centre crop) as a compact data URL. */
+export function toPortrait(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = 256;
+      const s = Math.min(img.width, img.height);
+      c.getContext('2d')!.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 256, 256);
+      resolve(c.toDataURL('image/jpeg', 0.88));
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+/** Bots and coaches have portraits (yours, if you uploaded one); people get the default pawn avatar. */
+export function avatar(id?: string): string {
+  if (!id || !AVATAR_IDS.has(id)) return GUEST;
+  return customPortraits()[id] ?? `${BASE}img/avatars/${id}.png`;
+}
+
+export const PORTRAIT_IDS = [...AVATAR_IDS];
 
 export const img3d = (name: string) => `${BASE}img/icons/${name}.png`;
 
@@ -324,6 +366,33 @@ export function settingsModal(onChange?: () => void): void {
       toggle('micOn', 'My mic', true),
       toggle('hearOpponent', 'Opponent’s voice', true),
       h('p.dim', { style: 'margin:0;font-size:12.5px' }, 'Voice chat is peer-to-peer. Your browser asks for mic permission once.'),
+      h('div.report', h('div.section', 'Coach & bot portraits')),
+      h('p.dim', { style: 'margin:0;font-size:12.5px' }, 'Upload your own picture for any character. It stays in this browser only.'),
+      h(
+        'div',
+        { style: 'display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px' },
+        PORTRAIT_IDS.map((id) => {
+          const input = h('input', {
+            type: 'file',
+            accept: 'image/*',
+            style: 'display:none',
+            onchange: async () => {
+              const f = input.files?.[0];
+              if (!f) return;
+              setCustomPortrait(id, await toPortrait(f));
+              render();
+            },
+          });
+          const custom = !!customPortraits()[id];
+          return h(
+            'div',
+            { style: 'display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700' },
+            h('img', { src: avatar(id), alt: id, title: `Change ${id}`, style: 'width:56px;height:56px;border-radius:6px;cursor:pointer;object-fit:cover', onclick: () => input.click() }),
+            input,
+            custom ? h('a', { href: 'javascript:void 0', style: 'color:#ff8b7b', onclick: () => (setCustomPortrait(id, null), render()) }, 'reset') : h('span.dim', id),
+          );
+        }),
+      ),
     );
   };
   render();

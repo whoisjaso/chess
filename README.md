@@ -2,6 +2,8 @@
 
 **Free, open-source chess that reads the mind behind the moves.**
 
+Play: https://chessbutfree.vercel.app · Multiplayer server: [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/whoisjaso/chess)
+
 ChessButFree has what you'd expect from a chess platform: live multiplayer, bots, game review, lessons, and an opening explorer. All of it is free, with no paywall on analysis, because the engine runs on your own device.
 
 It also does something the big platforms don't. It reads **the player**, not just the position:

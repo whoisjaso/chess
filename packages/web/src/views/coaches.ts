@@ -1,5 +1,5 @@
 import { ARCHETYPE_INFO, BOTS, COACHES, LESSONS } from '@chessbutfree/core';
-import { avatar, img3d } from '../components';
+import { avatar, img3d, settingsModal } from '../components';
 import { h } from '../dom';
 import type { View } from '../main';
 import { pref, setPref } from '../store';
@@ -9,7 +9,12 @@ export const coachesView: View = (el) => {
   el.append(
     h(
       'div.page',
-      h('div.page-head', h('img', { src: img3d('coaches'), alt: '' }), h('h1', 'Coaches')),
+      h(
+        'div.page-head',
+        h('img', { src: img3d('coaches'), alt: '' }),
+        h('h1', 'Coaches'),
+        h('button.btn.sm', { style: 'margin-left:auto', onclick: () => settingsModal(() => location.reload()) }, 'Customize portraits'),
+      ),
       h('p.muted', { style: 'margin:-10px 0 22px;font-size:16px;font-weight:600' }, 'Seven teachers modelled on how fiction’s sharpest minds think. Each owns one lens of the psychology. Your coach voices every Game Review.'),
       h(
         'div',

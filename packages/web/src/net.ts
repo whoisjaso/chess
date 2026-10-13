@@ -16,7 +16,11 @@ class Net {
   connect(): void {
     if (this.ws && this.ws.readyState <= 1) return;
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    const url = (import.meta.env.VITE_WS_URL as string | undefined) ?? `${proto}://${location.host}/ws`;
+    // Static hosts (Vercel, artifacts) can't run the game server; they talk to the Render service.
+    const staticHost = /\.vercel\.app$|claudeusercontent|claude\.ai/.test(location.host);
+    const url =
+      (import.meta.env.VITE_WS_URL as string | undefined) ??
+      (staticHost ? 'wss://chessbutfree.onrender.com/ws' : `${proto}://${location.host}/ws`);
     const ws = new WebSocket(url);
     this.ws = ws;
     ws.onopen = () => {
