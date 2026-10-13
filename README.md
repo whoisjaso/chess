@@ -36,6 +36,21 @@ npm run dev         # app on http://localhost:5173
 
 Terminal review of any PGN: `npx tsx scripts/review-pgn.ts game.pgn 14`
 
+## Voices
+
+- **Coach and bot voices.** Every coach and bot has its own voice profile. By default it uses the browser's speech engine. Optional **HD neural voices** (Piper, running on your device) download once per character.
+- **Voice Mode.** Speak your moves to the bots ("knight f3", "bishop takes c6", "castle kingside", "hint", "takeback"). The bot answers out loud.
+- **Voice chat.** Online games open a peer-to-peer WebRTC audio channel between the two players, on by default. Turn off *My mic* or *Opponent's voice* in settings or with the buttons on the player bars.
+
+## Deploy
+
+| Piece | Where | How |
+|---|---|---|
+| Web app (bots, Voice Mode, review, puzzles, lessons, openings) | Vercel / any static host | `vercel.json` is included: import the repo, and it builds `packages/web/dist` |
+| Multiplayer + voice-chat signalling server | Render / Fly / any Docker host | `render.yaml` + `Dockerfile` are included. Then set `VITE_WS_URL=wss://<your-server>/ws` on the web app and redeploy |
+
+The Docker image also serves the built web app, so a single Render service is a complete deployment.
+
 ## Docs
 
 1. [REA: Reverse engineering Chess.com](docs/01-REA-chess-com.md): every system, how it works, and our equivalent

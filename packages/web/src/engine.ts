@@ -7,7 +7,7 @@ import { UciEngine } from '@chessbutfree/core';
 let shared: UciEngine | null = null;
 
 export function newEngine(): UciEngine {
-  const worker = new Worker('/engine/stockfish.js');
+  const worker = new Worker(new URL(`${import.meta.env.BASE_URL}engine/stockfish.js`, location.href));
   const listeners: ((l: string) => void)[] = [];
   worker.onmessage = (e: MessageEvent) => {
     const text = String(e.data);

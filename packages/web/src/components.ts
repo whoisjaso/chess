@@ -4,6 +4,9 @@ import { clear, fmtClock, h } from './dom';
 import { icon, tierIcon } from './icons';
 import { pref, setPref } from './store';
 
+/** Base URL for static assets, so the app also works when hosted under a sub-path. */
+export const BASE = import.meta.env.BASE_URL;
+
 /* ------------------------------------------------------------------ avatars */
 
 const GUEST =
@@ -16,10 +19,10 @@ const AVATAR_IDS = new Set(['showman', 'diplomat', 'bookworm', 'professor', 'und
 
 /** Bots and coaches have rendered portraits; people get the default pawn avatar. */
 export function avatar(id?: string): string {
-  return id && AVATAR_IDS.has(id) ? `/img/avatars/${id}.png` : GUEST;
+  return id && AVATAR_IDS.has(id) ? `${BASE}img/avatars/${id}.png` : GUEST;
 }
 
-export const img3d = (name: string) => `/img/icons/${name}.png`;
+export const img3d = (name: string) => `${BASE}img/icons/${name}.png`;
 
 /* ------------------------------------------------------------------ app-wide board look */
 
@@ -42,7 +45,7 @@ export function pieceSet(): string {
 /** URL of a piece image in the current set ('wP', 'bK', ...). */
 export function pieceUrl(code: string): string {
   const set = pieceSet();
-  return `/img/pieces/${set}/${code}.${set === '3d' ? 'png' : 'svg'}`;
+  return `${BASE}img/pieces/${set}/${code}.${set === '3d' ? 'png' : 'svg'}`;
 }
 
 let pieceStyle: HTMLStyleElement | null = null;
