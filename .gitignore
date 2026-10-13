@@ -4,3 +4,4 @@ packages/web/public/engine/
 *.log
 .DS_Store
 packages/core/data/
+packages/server/data/

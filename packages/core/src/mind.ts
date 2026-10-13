@@ -337,7 +337,7 @@ export function readMinds(review: GameReview, plies: PlyRecord[], meta: GameMeta
     if (inBook) add(side, 'acceptance', 0.35, `${at} — book move`);
     if ((r.features.castle || r.features.development) && !inBook) add(side, 'acceptance', 0.3, `${at} — textbook development`);
     if (r.features.pawnStorm && r.epLoss < 0.08) add(side, 'strength', 0.8, `${at} — pawn storm`);
-    if ((r.features.threatsCreated > 0 || r.features.kingPressure >= 2) && !r.features.sacrifice) add(side, 'strength', 0.5, `${at} — created a threat`);
+    if ((r.features.threatsCreated > 0 || r.features.kingPressure >= 2) && !r.features.sacrifice && !isReactive(r)) add(side, 'strength', 0.25, `${at} — created a threat`);
 
     // Free choice: two or more near-equal options. The position did not decide; the person did.
     const freeChoice = !inBook && !routine && r.epSecond !== undefined && r.epBefore - r.epSecond <= 0.03 && r.features.legalMoves > 3;
@@ -375,7 +375,9 @@ export function readMinds(review: GameReview, plies: PlyRecord[], meta: GameMeta
   const profile = (side: Side): PlayerProfile => {
     const own = review.plies.filter((r) => r.side === side);
     const sc = { ...score[side] };
-    sc.strength += 3 * Math.max(0, (side === 'w' ? share.w : share.b) - 0.5);
+    // Initiative is the Strength signal: holding it adds weight, ceding it takes weight away.
+    const mine = side === 'w' ? share.w : share.b;
+    sc.strength = Math.max(0, sc.strength + 4 * (mine - 0.5));
     const total = ARCHETYPES.reduce((a, k) => a + sc[k], 0);
     const archetypes = Object.fromEntries(ARCHETYPES.map((a) => [a, total > 0 ? sc[a] / total : 1 / 6])) as Record<Archetype, number>;
     const ranked = [...ARCHETYPES].sort((a, b) => archetypes[b] - archetypes[a]);

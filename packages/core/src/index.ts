@@ -12,3 +12,4 @@ export * from './rating';
 export * from './pgn';
 export * from './lessons';
 export * from './uci';
+export * from './protocol';
