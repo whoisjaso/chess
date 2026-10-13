@@ -13,7 +13,7 @@ export const coachesView: View = (el) => {
       h('p.muted', { style: 'margin:-10px 0 22px;font-size:16px;font-weight:600' }, 'Seven teachers modelled on how fiction’s sharpest minds think. Each owns one lens of the psychology. Your coach voices every Game Review.'),
       h(
         'div',
-        { style: 'display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(470px,1fr))' },
+        { style: 'display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(470px,100%),1fr))' },
         COACHES.map((c) => {
           const bot = BOTS.find((b) => b.id === c.sparsAs)!;
           return h(

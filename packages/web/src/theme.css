@@ -430,7 +430,9 @@ body .cg-wrap coords.black coord:nth-child(even) { color: var(--sq-light); }
   .nav a img { width: 24px; height: 24px; }
   .board-layout { flex-direction: column; align-items: center; padding: 8px; }
   .panel { width: min(100%, var(--board) + 40px); height: auto; min-height: 360px; }
-  .board-gear { right: 0; top: -38px; }
+  .board-gear { right: 4px; top: 4px; z-index: 5; background: rgba(0, 0, 0, 0.35) !important; border-radius: 6px; }
+  .coach-card { grid-template-columns: 72px 1fr; gap: 12px; }
+  .coach-card img { width: 72px; height: 72px; }
   .hero, .feature, .two-col, .course { grid-template-columns: 1fr; }
   .track-tiles { grid-template-columns: repeat(3, 1fr); }
   .hero h1 { font-size: 34px; }

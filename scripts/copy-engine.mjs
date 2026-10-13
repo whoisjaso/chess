@@ -10,4 +10,7 @@ mkdirSync(out, { recursive: true });
 const base = readdirSync(src).find((f) => f.startsWith('stockfish-17.1-lite-single') && f.endsWith('.js')).slice(0, -3);
 copyFileSync(join(src, `${base}.js`), new URL('stockfish.js', out));
 copyFileSync(join(src, `${base}.wasm`), new URL('stockfish.wasm', out));
-console.log(`engine: ${base} -> packages/web/public/engine/`);
+// Pure-JavaScript fallback for hosts whose security policy forbids WebAssembly.
+const asm = readdirSync(src).find((f) => f.startsWith('stockfish-17.1-asm') && f.endsWith('.js'));
+copyFileSync(join(src, asm), new URL('stockfish-asm.js', out));
+console.log(`engine: ${base} (+ ${asm} fallback) -> packages/web/public/engine/`);

@@ -11,6 +11,7 @@ class Net {
   playerId: string | undefined = pref<string | undefined>('playerId', undefined);
   name: string = pref('name', '');
   connected = false;
+  private retry = 0;
 
   connect(): void {
     if (this.ws && this.ws.readyState <= 1) return;
@@ -20,6 +21,7 @@ class Net {
     this.ws = ws;
     ws.onopen = () => {
       this.connected = true;
+      this.retry = 0;
       ws.send(JSON.stringify({ t: 'hello', playerId: this.playerId, name: this.name || undefined } satisfies ClientMsg));
       this.queue.splice(0).forEach((m) => ws.send(JSON.stringify(m)));
     };
@@ -35,7 +37,9 @@ class Net {
     };
     ws.onclose = () => {
       this.connected = false;
-      setTimeout(() => this.handlers.size && this.connect(), 1500);
+      // Back off when no server answers (e.g. a static-only deployment): 1.5s, 3s, 6s ... max 60s.
+      this.retry = Math.min(60_000, this.retry ? this.retry * 2 : 1500);
+      setTimeout(() => this.handlers.size && this.connect(), this.retry);
     };
   }
 
