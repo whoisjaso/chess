@@ -1,5 +1,5 @@
 {
-  "name": "@mindboard/web",
+  "name": "@chessbutfree/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,6 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@diffusionstudio/vits-web": "^1.0.3",
+    "@fontsource-variable/figtree": "^5.3.0",
     "chess.js": "1.4.0",
     "chessground": "9.2.1",
     "stockfish": "17.1.0"

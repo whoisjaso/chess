@@ -1,0 +1,7 @@
+# One-click deploy of the ChessButFree server on Render (free tier supports WebSockets).
+services:
+  - type: web
+    name: chessbutfree
+    runtime: docker
+    plan: free
+    healthCheckPath: /health

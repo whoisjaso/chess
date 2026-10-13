@@ -9,7 +9,7 @@ import {
   type ServerMsg,
   type Speed,
   type TimeControl,
-} from '@mindboard/core';
+} from '@chessbutfree/core';
 import { Game } from './game';
 
 export interface Conn {
@@ -118,6 +118,7 @@ export class Hub {
     this.games.set(g.data.id, g);
     this.toPlayer(whiteId, { t: 'game', game: g.data, you: 'w' });
     this.toPlayer(blackId, { t: 'game', game: g.data, you: 'b' });
+    this.broadcastLobby();
     return g;
   }
 
@@ -190,6 +191,14 @@ export class Hub {
     const g = this.games.get(msg.gameId);
     if (!g) return conn.send({ t: 'error', message: 'game not found' });
     switch (msg.t) {
+      case 'signal': {
+        // Voice chat: relay the WebRTC handshake to the other player only, while the game is live.
+        const me = g.colorOf(playerId);
+        if (!me || g.data.status !== 'playing') return;
+        const other = me === 'w' ? g.data.black.id : g.data.white.id;
+        this.toPlayer(other, { t: 'signal', gameId: g.data.id, data: msg.data });
+        return;
+      }
       case 'move': {
         const r = g.move(playerId, msg.uci, msg.thinkMs);
         if (r.ok) {
@@ -259,6 +268,7 @@ export class Hub {
         return { tc: { initialMs: i, incrementMs: inc }, count: q.length };
       });
     const online = [...this.players.values()].filter((p) => p.conns.size).length;
-    for (const p of this.players.values()) p.conns.forEach((c) => c.send({ t: 'lobby', online, seeks }));
+    const playing = 2 * [...this.games.values()].filter((g) => g.data.status === 'playing').length;
+    for (const p of this.players.values()) p.conns.forEach((c) => c.send({ t: 'lobby', online, playing, seeks }));
   }
 }

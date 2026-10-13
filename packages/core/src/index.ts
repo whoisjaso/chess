@@ -13,3 +13,5 @@ export * from './pgn';
 export * from './lessons';
 export * from './uci';
 export * from './protocol';
+export * from './puzzles';
+export * from './speech';

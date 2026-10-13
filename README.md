@@ -1,8 +1,8 @@
-# Mindboard
+# ChessButFree
 
 **Free, open-source chess that reads the mind behind the moves.**
 
-Mindboard has what you'd expect from a chess platform: live multiplayer, bots, game review, lessons, and an opening explorer. All of it is free, with no paywall on analysis, because the engine runs on your own device.
+ChessButFree has what you'd expect from a chess platform: live multiplayer, bots, game review, lessons, and an opening explorer. All of it is free, with no paywall on analysis, because the engine runs on your own device.
 
 It also does something the big platforms don't. It reads **the player**, not just the position:
 

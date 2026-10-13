@@ -1,5 +1,5 @@
 {
-  "name": "mindboard",
+  "name": "chessbutfree",
   "private": true,
   "version": "0.1.0",
   "description": "Free, open-source chess platform that reads the mind behind the moves.",
@@ -9,9 +9,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w @mindboard/web",
-    "server": "npm run start -w @mindboard/server",
-    "build": "npm run build -w @mindboard/web",
+    "dev": "npm run dev -w @chessbutfree/web",
+    "server": "npm run start -w @chessbutfree/server",
+    "build": "npm run build -w @chessbutfree/web",
     "test": "vitest run",
     "typecheck": "tsc -p packages/core && tsc -p packages/server && tsc -p packages/web",
     "openings": "node scripts/build-openings.mjs"

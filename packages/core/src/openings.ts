@@ -45,20 +45,23 @@ export function searchOpenings(query: string, limit = 50): Opening[] {
 }
 
 /** Named continuations from a position: the "book" a player can still hide inside. */
-export function bookContinuations(fen: string): { uci: string; opening: Opening }[] {
+export function bookContinuations(fen: string): { uci: string; opening: Opening; lines: number }[] {
   const key = epd(fen);
   const start = OPENINGS.find((o) => o.epd === key);
   const prefix = start ? start.uci : null;
   if (prefix === null && key !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -') return [];
   const depth = prefix ? prefix.split(' ').length : 0;
   const seen = new Map<string, Opening>();
+  const weight = new Map<string, number>();
   for (const o of OPENINGS) {
     const moves = o.uci.split(' ');
     if (moves.length <= depth) continue;
     if (prefix && !o.uci.startsWith(prefix + ' ')) continue;
     const next = moves[depth];
+    weight.set(next, (weight.get(next) ?? 0) + 1);
     const cur = seen.get(next);
     if (!cur || o.uci.split(' ').length < cur.uci.split(' ').length) seen.set(next, o);
   }
-  return [...seen.entries()].map(([uci, opening]) => ({ uci, opening }));
+  // Main lines first: the more named theory behind a move, the more it is played.
+  return [...seen.entries()].map(([uci, opening]) => ({ uci, opening, lines: weight.get(uci) ?? 0 })).sort((a, b) => b.lines - a.lines);
 }

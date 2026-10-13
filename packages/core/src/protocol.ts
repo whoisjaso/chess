@@ -52,11 +52,13 @@ export type ClientMsg =
   | { t: 'answerDraw'; gameId: string; accept: boolean }
   | { t: 'abort'; gameId: string }
   | { t: 'rematch'; gameId: string }
+  /** WebRTC voice-chat handshake, relayed to the opponent only. */
+  | { t: 'signal'; gameId: string; data: unknown }
   | { t: 'ping' };
 
 export type ServerMsg =
   | { t: 'welcome'; playerId: string; name: string; ratings: Record<Speed, number> }
-  | { t: 'lobby'; online: number; seeks: { tc: TimeControl; count: number }[] }
+  | { t: 'lobby'; online: number; playing: number; seeks: { tc: TimeControl; count: number }[] }
   | { t: 'seeking'; tc: TimeControl }
   | { t: 'privateCreated'; gameId: string }
   | { t: 'game'; game: WireGame; you?: 'w' | 'b' }
@@ -64,5 +66,6 @@ export type ServerMsg =
   | { t: 'drawOffer'; gameId: string; by: 'w' | 'b' }
   | { t: 'end'; game: WireGame; ratingDiff?: { w: number; b: number }; pgn: string }
   | { t: 'rematchOffer'; gameId: string }
+  | { t: 'signal'; gameId: string; data: unknown }
   | { t: 'error'; message: string }
   | { t: 'pong'; now: number };

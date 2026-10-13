@@ -5,3 +5,4 @@ packages/web/public/engine/
 .DS_Store
 packages/core/data/
 packages/server/data/
+__pycache__/

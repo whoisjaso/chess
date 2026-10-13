@@ -1,5 +1,5 @@
 import { Chess } from 'chess.js';
-import type { PlayerInfo, TimeControl, WireGame } from '@mindboard/core';
+import type { PlayerInfo, TimeControl, WireGame } from '@chessbutfree/core';
 
 export type Color = 'w' | 'b';
 
@@ -155,7 +155,7 @@ export class Game {
   pgn(): string {
     const c = new Chess();
     c.setHeader('Event', this.data.rated ? 'Rated game' : 'Casual game');
-    c.setHeader('Site', 'Mindboard');
+    c.setHeader('Site', 'ChessButFree');
     c.setHeader('White', this.data.white.name);
     c.setHeader('Black', this.data.black.name);
     c.setHeader('WhiteElo', String(Math.round(this.data.white.rating)));

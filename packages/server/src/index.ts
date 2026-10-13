@@ -3,7 +3,7 @@ import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
-import type { ClientMsg, ServerMsg } from '@mindboard/core';
+import type { ClientMsg, ServerMsg } from '@chessbutfree/core';
 import { Hub, type Conn } from './hub';
 
 const PORT = Number(process.env.PORT ?? 8787);
@@ -48,7 +48,7 @@ const server = createServer((req, res) => {
   if (!file.startsWith(STATIC_DIR) || !existsSync(file) || statSync(file).isDirectory()) file = join(STATIC_DIR, 'index.html');
   if (!existsSync(file)) {
     res.writeHead(200, { 'content-type': 'text/plain' });
-    return res.end('Mindboard server is running. Build the web app (npm run build) or run it with `npm run dev`.');
+    return res.end('ChessButFree server is running. Build the web app (npm run build) or run it with `npm run dev`.');
   }
   // Cross-origin isolation lets the multi-threaded Stockfish build use SharedArrayBuffer.
   res.writeHead(200, {
@@ -83,4 +83,4 @@ wss.on('connection', (ws: WebSocket) => {
   });
 });
 
-server.listen(PORT, () => console.log(`Mindboard server on http://localhost:${PORT}  (ws: /ws)`));
+server.listen(PORT, () => console.log(`ChessButFree server on http://localhost:${PORT}  (ws: /ws)`));

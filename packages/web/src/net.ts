@@ -1,4 +1,4 @@
-import type { ClientMsg, ServerMsg } from '@mindboard/core';
+import type { ClientMsg, ServerMsg } from '@chessbutfree/core';
 import { pref, setPref } from './store';
 
 type Handler = (m: ServerMsg) => void;

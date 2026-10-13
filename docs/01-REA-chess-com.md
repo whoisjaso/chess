@@ -15,13 +15,13 @@ Chess.com is four machines bolted together:
 3. **A content library.** Lessons, puzzles, openings, and bots all serve as structured practice.
 4. **A monetization layer.** It meters the expensive parts: engine review, lessons, and puzzles.
 
-The engine farm is the cost center. The paywall sits exactly there: free users get limited Game Reviews per day. **Mindboard's core economic move is to run the engine on the player's own device (Stockfish WASM), so the expensive machine costs us nothing and nothing has to be metered.**
+The engine farm is the cost center. The paywall sits exactly there: free users get limited Game Reviews per day. **ChessButFree's core economic move is to run the engine on the player's own device (Stockfish WASM), so the expensive machine costs us nothing and nothing has to be metered.**
 
 ---
 
 ## 1. Product map
 
-| Area | What Chess.com ships | How it works | Mindboard |
+| Area | What Chess.com ships | How it works | ChessButFree |
 |---|---|---|---|
 | Live play | Bullet, blitz, rapid; quick pairing; rematch; spectating | WebSocket game servers, server-side clocks, rating-window matchmaking 🔍 | ✅ Built: `packages/server` |
 | Daily (correspondence) | Days per move | Same rules engine, persistent storage, notifications 🔍 | Roadmap |
@@ -89,7 +89,7 @@ Chess.com's CAPS2 is proprietary ✅. It was redesigned in 2021 to read like a s
 
 ### 2.4 The Coach 🔍
 
-The Chess.com coach reads as **templates over engine facts**: "{move} is a mistake. {best} was better because it {threat/material/mate}." It adds key moments (largest EP swings) and "retry" positions. Mindboard does the same for the board, then adds what no review tool has: a read on the **player** (Section 5).
+The Chess.com coach reads as **templates over engine facts**: "{move} is a mistake. {best} was better because it {threat/material/mate}." It adds key moments (largest EP swings) and "retry" positions. ChessButFree does the same for the board, then adds what no review tool has: a read on the **player** (Section 5).
 
 ---
 
@@ -97,7 +97,7 @@ The Chess.com coach reads as **templates over engine facts**: "{move} is a mista
 
 From observable behaviour (and from Lichess, whose identical system is open source):
 
-| Concern | Industry design | Mindboard |
+| Concern | Industry design | ChessButFree |
 |---|---|---|
 | Transport | Persistent WebSocket per client; small JSON or binary frames | `ws` server, JSON protocol in `core/src/protocol.ts` |
 | Authority | The server validates every move; the client only proposes | `chess.js` on the server (`server/src/game.ts`) |
@@ -124,7 +124,7 @@ From observable behaviour (and from Lichess, whose identical system is open sour
 3. A wrong move snaps back with a hint; a right move triggers the opponent's scripted reply.
 4. The lesson completes, and progress is saved.
 
-Mindboard keeps this loop exactly (`LessonStep.tasks[]` with `accept[]` + `reply`). Every exercise is verified by tests: moves are legal, and mates really mate.
+ChessButFree keeps this loop exactly (`LessonStep.tasks[]` with `accept[]` + `reply`). Every exercise is verified by tests: moves are legal, and mates really mate.
 
 ### Puzzles 🔍
 Puzzles are mined from real games. Find positions where exactly one move wins and the rest don't, then rate puzzle and player against each other with Glicko. Lichess publishes ~5M puzzles under CC0, which is our import path.
@@ -144,7 +144,7 @@ Chess.com grades **the board**. It never asks:
 - Who was steering the game, regardless of the eval?
 - Across 20 games, what are you *for*: spectacle, safety, conformity, certainty, sympathy, control?
 
-All the evidence is already in the data: think times (`[%clk]` comments, even in Chess.com and Lichess exports), move types, initiative, and quality under pressure. Chess.com uses the same behavioural signals to **police** players (fair play). Mindboard uses them to **coach** them. That is the product. See [`02-mind-engine.md`](./02-mind-engine.md).
+All the evidence is already in the data: think times (`[%clk]` comments, even in Chess.com and Lichess exports), move types, initiative, and quality under pressure. Chess.com uses the same behavioural signals to **police** players (fair play). ChessButFree uses them to **coach** them. That is the product. See [`02-mind-engine.md`](./02-mind-engine.md).
 
 ---
 

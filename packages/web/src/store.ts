@@ -1,4 +1,4 @@
-import type { GameMeta, PlyRecord } from '@mindboard/core';
+import type { GameMeta, PlyRecord } from '@chessbutfree/core';
 
 /** Games live in this browser only. No account, no server copy of your "considered" squares. */
 export interface StoredGame {
@@ -12,7 +12,7 @@ export interface StoredGame {
   opponent?: string;
 }
 
-const KEY = 'mindboard.games.v1';
+const KEY = 'chessbutfree.games.v1';
 
 function safe<T>(f: () => T, fallback: T): T {
   try {
@@ -38,13 +38,13 @@ export function saveGame(g: StoredGame): void {
 
 export function pref<T>(key: string, fallback: T): T {
   return safe(() => {
-    const v = localStorage.getItem(`mindboard.${key}`);
+    const v = localStorage.getItem(`chessbutfree.${key}`);
     return v === null ? fallback : (JSON.parse(v) as T);
   }, fallback);
 }
 
 export function setPref(key: string, v: unknown): void {
-  safe(() => localStorage.setItem(`mindboard.${key}`, JSON.stringify(v)), undefined);
+  safe(() => localStorage.setItem(`chessbutfree.${key}`, JSON.stringify(v)), undefined);
 }
 
 export const newId = () => Math.random().toString(36).slice(2, 10);

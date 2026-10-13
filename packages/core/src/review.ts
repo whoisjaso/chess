@@ -46,6 +46,53 @@ export interface GameReview {
   black: SideSummary;
   /** White's win% (0..100) before each ply and after the last one, for the eval graph. */
   winSeries: number[];
+  /** Per-phase accuracy grade for each side (Chess.com shows these as icons). */
+  phases: Record<Phase, { w?: Classification; b?: Classification; startPly: number } | undefined>;
+}
+
+export type Phase = 'opening' | 'middlegame' | 'endgame';
+
+/** Map an average accuracy to the icon used for a phase grade. */
+export function gradeOf(acc: number): Classification {
+  if (acc >= 95) return 'best';
+  if (acc >= 85) return 'excellent';
+  if (acc >= 70) return 'good';
+  if (acc >= 55) return 'inaccuracy';
+  if (acc >= 40) return 'mistake';
+  return 'blunder';
+}
+
+/** Endgame: little heavy material left (non-pawn, non-king material of both sides <= 26 pawns). */
+function nonPawnMaterial(fen: string): number {
+  const v: Record<string, number> = { n: 3, b: 3, r: 5, q: 9 };
+  return [...fen.split(' ')[0].toLowerCase()].reduce((a, ch) => a + (v[ch] ?? 0), 0);
+}
+
+function phasesOf(plies: PlyRecord[], reviews: PlyReview[], lastBookPly: number): GameReview['phases'] {
+  const openingEnd = Math.max(lastBookPly + 1, Math.min(20, plies.length));
+  let endgameStart = plies.findIndex((p) => nonPawnMaterial(p.fenBefore) <= 26);
+  if (endgameStart < 0) endgameStart = plies.length;
+  const bounds: [Phase, number, number][] = [
+    ['opening', 0, Math.min(openingEnd, endgameStart)],
+    ['middlegame', Math.min(openingEnd, endgameStart), endgameStart],
+    ['endgame', endgameStart, plies.length],
+  ];
+  const out = {} as GameReview['phases'];
+  for (const [phase, a, b] of bounds) {
+    const slice = reviews.slice(a, b);
+    if (!slice.length) {
+      out[phase] = undefined;
+      continue;
+    }
+    const grade = (side: Side) => {
+      const xs = slice.filter((r) => r.side === side);
+      if (!xs.length) return undefined;
+      if (xs.every((r) => r.classification === 'book')) return 'book' as Classification;
+      return gradeOf(xs.reduce((s, r) => s + r.accuracy, 0) / xs.length);
+    };
+    out[phase] = { w: grade('w'), b: grade('b'), startPly: a + 1 };
+  }
+  return out;
 }
 
 const ZERO_COUNTS = (): Record<Classification, number> => ({
@@ -206,5 +253,13 @@ export function reviewGame(plies: PlyRecord[], evals: (PositionEval | null)[], m
     return { accuracy: gameAccuracy(accs, winSeries), counts };
   };
 
-  return { plies: out, opening, lastBookPly: lastBookIndex, white: summarize('w'), black: summarize('b'), winSeries };
+  return {
+    plies: out,
+    opening,
+    lastBookPly: lastBookIndex,
+    white: summarize('w'),
+    black: summarize('b'),
+    winSeries,
+    phases: phasesOf(plies, out, lastBookIndex),
+  };
 }

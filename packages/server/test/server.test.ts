@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ServerMsg } from '@mindboard/core';
+import type { ServerMsg } from '@chessbutfree/core';
 import { Game } from '../src/game';
 import { Hub, type Conn } from '../src/hub';
 
@@ -100,5 +100,29 @@ describe('Hub', () => {
     hub.handle(s.id, { t: 'watch', gameId: created.gameId }, cs);
     const g = cs.inbox.find((m) => m.t === 'game') as Extract<ServerMsg, { t: 'game' }>;
     expect(g.you).toBeUndefined();
+  });
+});
+
+describe('voice chat signalling', () => {
+  it('relays WebRTC signals to the opponent only', () => {
+    const hub = new Hub();
+    const inbox = () => {
+      const box: ServerMsg[] = [];
+      return { box, send: (m: ServerMsg) => box.push(m) } as Conn & { box: ServerMsg[] };
+    };
+    const ca = inbox();
+    const cb = inbox();
+    const cs = inbox();
+    const a = hub.connect(ca, { t: 'hello' });
+    const b = hub.connect(cb, { t: 'hello' });
+    const s = hub.connect(cs, { t: 'hello' });
+    hub.handle(a.id, { t: 'seek', tc, rated: false }, ca);
+    hub.handle(b.id, { t: 'seek', tc, rated: false }, cb);
+    const g = ca.box.find((m) => m.t === 'game') as Extract<ServerMsg, { t: 'game' }>;
+    hub.handle(s.id, { t: 'watch', gameId: g.game.id }, cs);
+    hub.handle(a.id, { t: 'signal', gameId: g.game.id, data: { description: { type: 'offer', sdp: 'x' } } }, ca);
+    expect(cb.box.some((m) => m.t === 'signal')).toBe(true);
+    expect(cs.box.some((m) => m.t === 'signal')).toBe(false);
+    expect(ca.box.some((m) => m.t === 'signal')).toBe(false);
   });
 });

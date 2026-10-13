@@ -1,4 +1,4 @@
-import { UciEngine } from '@mindboard/core';
+import { UciEngine } from '@chessbutfree/core';
 
 /**
  * Stockfish 17.1 (lite, single-threaded WASM) in a Web Worker. Runs entirely on the user's device:

@@ -98,9 +98,12 @@ export function coachReport(review: GameReview, mind: MindReport): CoachReport {
     }),
   ) as CoachReport['forPlayer'];
 
-  const winner = review.white.accuracy >= review.black.accuracy ? 'White' : 'Black';
+  const better = review.white.accuracy >= review.black.accuracy ? (['w', w] as const) : (['b', b] as const);
   return {
-    headline: `${winner} played the board better; ${lead[0] === 'w' ? 'White' : 'Black'} owned the frame.`,
+    headline:
+      better[0] === lead[0]
+        ? `${name(better[0], better[1])} won the board and the frame.`
+        : `${name(better[0], better[1])} played the board better, but ${name(lead[0], lead[1])} owned the frame.`,
     paragraphs,
     forPlayer,
   };

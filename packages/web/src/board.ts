@@ -1,11 +1,14 @@
 import 'chessground/assets/chessground.base.css';
-import 'chessground/assets/chessground.brown.css';
 import 'chessground/assets/chessground.cburnett.css';
+import type { Classification } from '@chessbutfree/core';
 import { Chess, type Square } from 'chess.js';
 import { Chessground } from 'chessground';
 import type { Api } from 'chessground/api';
 import type { DrawShape } from 'chessground/draw';
 import type { Key } from 'chessground/types';
+import { tierIcon } from './icons';
+import { moveSound } from './sound';
+import { pref } from './store';
 
 export type Color = 'white' | 'black';
 
@@ -32,23 +35,42 @@ export class Board {
   private considered: string[] = [];
   private turnStart = performance.now();
   private interactive: Color | 'both' | undefined;
+  private badgeEl: HTMLElement;
+  private premoveColor: Color | undefined;
 
   constructor(
-    el: HTMLElement,
-    private opts: { orientation?: Color; fen?: string; interactive?: Color | 'both'; onMove?: (uci: string, meta: MoveMeta) => void },
+    private host: HTMLElement,
+    private opts: {
+      orientation?: Color;
+      fen?: string;
+      interactive?: Color | 'both';
+      onMove?: (uci: string, meta: MoveMeta) => void;
+      viewOnly?: boolean;
+      sound?: boolean;
+      /** Allow premoves for this colour (online/bot games). */
+      premove?: Color;
+    },
   ) {
     this.chess = new Chess(opts.fen);
     this.interactive = opts.interactive;
-    this.cg = Chessground(el, {
+    this.premoveColor = opts.premove;
+    this.cg = Chessground(host, {
       fen: this.chess.fen(),
       orientation: opts.orientation ?? 'white',
-      animation: { duration: 180 },
+      viewOnly: opts.viewOnly,
+      coordinates: pref('coords', true),
+      animation: { duration: 160 },
       highlight: { lastMove: true, check: true },
       movable: { free: false, showDests: true, events: { after: (o, d) => this.userMove(o, d) } },
-      premovable: { enabled: false },
+      premovable: { enabled: !!opts.premove },
       draggable: { showGhost: true },
+      drawable: { enabled: true },
       events: { select: (k) => this.considered.push(k) },
     });
+    this.badgeEl = document.createElement('div');
+    this.badgeEl.className = 'sq-badge';
+    this.badgeEl.style.display = 'none';
+    host.appendChild(this.badgeEl);
     this.sync();
   }
 
@@ -57,12 +79,15 @@ export class Board {
     const promo = piece?.type === 'p' && (dest[1] === '8' || dest[1] === '1') ? 'q' : '';
     const uci = orig + dest + promo;
     const meta = { thinkMs: Math.round(performance.now() - this.turnStart), considered: [...new Set(this.considered)] };
-    this.apply(uci);
+    if (this.apply(uci) === null) {
+      this.sync();
+      return;
+    }
     this.opts.onMove?.(uci, meta);
   }
 
   /** Apply a move (from the user, a bot, or the network). Returns SAN, or null if illegal. */
-  apply(uci: string): string | null {
+  apply(uci: string, opts: { sound?: boolean } = {}): string | null {
     let san: string;
     try {
       san = this.chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] || undefined }).san;
@@ -73,6 +98,8 @@ export class Board {
     this.considered = [];
     this.turnStart = performance.now();
     this.sync();
+    if (opts.sound ?? this.opts.sound ?? true) moveSound(san);
+    if (this.premoveColor) setTimeout(() => this.cg.playPremove(), 10);
     return san;
   }
 
@@ -84,8 +111,13 @@ export class Board {
     this.sync();
   }
 
+  setOnMove(fn: (uci: string, meta: MoveMeta) => void): void {
+    this.opts.onMove = fn;
+  }
+
   setInteractive(c: Color | 'both' | undefined): void {
     this.interactive = c;
+    if (!c) this.cg.cancelPremove();
     this.sync();
   }
 
@@ -93,18 +125,46 @@ export class Board {
     this.cg.set({ orientation: c });
   }
 
+  flip(): void {
+    this.cg.toggleOrientation();
+  }
+
   shapes(s: DrawShape[]): void {
     this.cg.setAutoShapes(s);
   }
 
+  /** Put a move-rating badge on a square's top-right corner (Game Review). */
+  badge(square: string | null, tier?: Classification): void {
+    if (!square || !tier) {
+      this.badgeEl.style.display = 'none';
+      return;
+    }
+    const white = this.cg.state.orientation === 'white';
+    const f = square.charCodeAt(0) - 97;
+    const r = Number(square[1]) - 1;
+    const col = white ? f : 7 - f;
+    const row = white ? 7 - r : r;
+    this.badgeEl.replaceChildren(tierIcon(tier));
+    this.badgeEl.style.left = `${((col + 1) / 8) * 100}%`;
+    this.badgeEl.style.top = `${(row / 8) * 100}%`;
+    this.badgeEl.style.display = '';
+  }
+
   private sync(): void {
     const turn: Color = this.chess.turn() === 'w' ? 'white' : 'black';
-    const canMove = !this.chess.isGameOver() && (this.interactive === 'both' || this.interactive === turn);
+    const over = this.chess.isGameOver();
+    const canMove = !over && (this.interactive === 'both' || this.interactive === turn);
+    const premoveFor = !over && this.premoveColor && this.interactive === this.premoveColor && turn !== this.premoveColor ? this.premoveColor : undefined;
     this.cg.set({
       turnColor: turn,
       check: this.chess.inCheck() ? turn : false,
-      movable: { color: canMove ? turn : undefined, dests: canMove ? dests(this.chess) : new Map() },
+      movable: { color: canMove ? turn : premoveFor, dests: canMove ? dests(this.chess) : new Map() },
     });
+  }
+
+  destroy(): void {
+    this.cg.destroy();
+    this.host.replaceChildren();
   }
 }
 

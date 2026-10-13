@@ -17,7 +17,7 @@ export interface PositionEval {
 
 /**
  * Everything we know about one half-move. Clock data is optional: an imported PGN may have none,
- * a game played on Mindboard always has it (that is where the psychology gets its best evidence).
+ * a game played on ChessButFree always has it (that is where the psychology gets its best evidence).
  */
 export interface PlyRecord {
   ply: number; // 1-based
