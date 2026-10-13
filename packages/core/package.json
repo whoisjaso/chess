@@ -1,0 +1,14 @@
+{
+  "name": "@mindboard/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "main": "src/index.ts",
+  "dependencies": {
+    "chess.js": "1.4.0"
+  },
+  "devDependencies": {
+    "stockfish": "^17.1.0"
+  }
+}
